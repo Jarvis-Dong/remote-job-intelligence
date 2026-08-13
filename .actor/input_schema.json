@@ -1,0 +1,55 @@
+{
+  "$schema": "https://apify.com/schemas/v1/input.ide.json",
+  "title": "Remote job query",
+  "description": "Filter current listings from public remote-job feeds.",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "sources": {
+      "title": "Sources",
+      "type": "array",
+      "description": "Public feeds to query; no login or proxy is required.",
+      "editor": "select",
+      "default": ["arbeitnow", "jobicy", "remoteok", "himalayas"],
+      "items": {"type": "string", "enum": ["arbeitnow", "jobicy", "remoteok", "himalayas"]}
+    },
+    "keywords": {
+      "title": "Keywords",
+      "type": "array",
+      "description": "All keywords must occur in the normalized listing text.",
+      "editor": "stringList"
+    },
+    "locations": {
+      "title": "Locations",
+      "type": "array",
+      "description": "Match a source location or location restriction.",
+      "editor": "stringList"
+    },
+    "maxAgeDays": {
+      "title": "Maximum age (days)",
+      "type": "integer",
+      "description": "Exclude listings older than this many days.",
+      "default": 14,
+      "minimum": 0,
+      "maximum": 365,
+      "editor": "number"
+    },
+    "limit": {
+      "title": "Maximum results",
+      "type": "integer",
+      "description": "Maximum number of normalized records to return.",
+      "default": 50,
+      "minimum": 1,
+      "maximum": 100,
+      "editor": "number"
+    },
+    "includeDescription": {
+      "title": "Include descriptions",
+      "type": "boolean",
+      "description": "Include cleaned job descriptions in each result.",
+      "default": false,
+      "editor": "checkbox"
+    }
+  },
+  "required": ["sources", "keywords", "locations", "maxAgeDays", "limit", "includeDescription"]
+}

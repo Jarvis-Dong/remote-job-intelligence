@@ -1,0 +1,18 @@
+{
+  "$schema": "https://apify.com/schemas/v1/actor.ide.json",
+  "actorSpecification": 1,
+  "name": "remote-job-intelligence",
+  "title": "Remote Job Intelligence",
+  "description": "Normalized current remote jobs from public APIs with source attribution.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "readme": "../README.md",
+  "dockerContextDir": "..",
+  "minMemoryMbytes": 128,
+  "defaultMemoryMbytes": 128,
+  "maxMemoryMbytes": 256,
+  "input": "./input_schema.json",
+  "output": "./output_schema.json",
+  "storages": {"dataset": "./dataset_schema.json"},
+  "dockerfile": "../Dockerfile"
+}

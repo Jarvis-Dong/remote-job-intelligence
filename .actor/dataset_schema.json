@@ -1,0 +1,37 @@
+{
+  "$schema": "https://apify.com/schemas/v1/dataset.ide.json",
+  "actorSpecification": 1,
+  "fields": {
+    "id": {"type": "string"},
+    "source": {"type": "string"},
+    "sourceName": {"type": "string"},
+    "sourceUrl": {"type": "string", "format": "uri"},
+    "jobTitle": {"type": "string"},
+    "company": {"type": "string", "nullable": true},
+    "locations": {"type": "array", "items": {"type": "string"}},
+    "remote": {"type": "boolean"},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "publishedAt": {"type": "string", "format": "date-time", "nullable": true},
+    "url": {"type": "string", "format": "uri"},
+    "applyUrl": {"type": "string", "format": "uri"},
+    "salary": {"type": "object", "nullable": true},
+    "jobDescription": {"type": "string", "nullable": true}
+  },
+  "views": {
+    "overview": {
+      "title": "Remote jobs",
+      "transformation": {"fields": ["jobTitle", "company", "locations", "publishedAt", "sourceName", "applyUrl"]},
+      "display": {
+        "component": "table",
+        "properties": {
+          "jobTitle": {"label": "Title", "format": "text"},
+          "company": {"label": "Company", "format": "text"},
+          "locations": {"label": "Location", "format": "array"},
+          "publishedAt": {"label": "Published", "format": "date"},
+          "sourceName": {"label": "Source", "format": "text"},
+          "applyUrl": {"label": "Apply", "format": "link"}
+        }
+      }
+    }
+  }
+}

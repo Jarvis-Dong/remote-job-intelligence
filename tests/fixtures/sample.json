@@ -1,0 +1,16 @@
+{
+  "arbeitnow": {
+    "data": [
+      {
+        "slug": "sample-python",
+        "title": "Python Engineer",
+        "company_name": "Example Co",
+        "location": "Worldwide",
+        "remote": true,
+        "tags": ["Python", "Backend"],
+        "created_at": "2026-08-13T00:00:00Z",
+        "url": "https://example.com/jobs/python-engineer"
+      }
+    ]
+  }
+}
