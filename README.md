@@ -1,8 +1,18 @@
-# Remote Job Intelligence
+# Remote Jobs Aggregator API
 
-An independent Apify Actor that normalizes current remote-job listings from
-public feeds. It keeps the original source and application URL so a consumer
-can verify every record.
+Aggregate and deduplicate current remote-job listings from four public feeds in
+one run. The normalized dataset is ready for recruiter alerts, job boards,
+market research, and AI agents, while retaining the original source and direct
+application URL for every record.
+
+[Run the public daily software-jobs example](https://apify.com/ai-coding-radar/remote-job-intelligence/examples/daily-remote-software-jobs).
+
+## Use cases
+
+- Build a daily remote-jobs digest with n8n, Make, Zapier, or the Actor API.
+- Feed a job board or recruiter workflow with deduplicated listings.
+- Export the Apify dataset as JSON, CSV, or Excel for research and reporting.
+- Give an AI agent structured records without logging in to job sites.
 
 ## Sources
 
@@ -23,15 +33,16 @@ instructions hidden in a listing.
 ```json
 {
   "sources": ["arbeitnow", "jobicy", "remoteok", "himalayas"],
-  "keywords": ["python", "ai"],
+  "keywords": ["software"],
   "locations": [],
-  "maxAgeDays": 14,
-  "limit": 50,
+  "maxAgeDays": 7,
+  "limit": 20,
   "includeDescription": false
 }
 ```
 
-`keywords` match the job title, company, tags, and (when requested) job description.
+Every keyword must match the job title, company, tags, or (when requested) job
+description, so use one broad term for a daily alert.
 `locations` match the normalized location and source location restrictions.
 An empty filter means all matching remote listings. Results are deduplicated by
 canonical application URL, then by a normalized company/title pair.
