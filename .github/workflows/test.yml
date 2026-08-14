@@ -3,6 +3,9 @@ name: Test remote job intelligence
 on:
   push:
   pull_request:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,5 +25,17 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Compile Python
         run: python -m compileall -q remote_job_intelligence
+      - name: Live smoke test each source
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          python - <<'PY'
+          from remote_job_intelligence.core import SOURCES, collect_jobs
+
+          for source in SOURCES:
+              jobs = collect_jobs([source], max_age_days=30, limit=1)
+              if not jobs:
+                  raise RuntimeError(f"{source} returned no valid jobs from the last 30 days")
+              print(f"{source}: {jobs[0]['jobTitle']} -> {jobs[0]['applyUrl']}")
+          PY
       - name: Validate Apify schemas
         run: npx --yes apify-cli validate-schema
