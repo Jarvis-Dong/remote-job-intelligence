@@ -38,10 +38,9 @@ canonical application URL, then by a normalized company/title pair.
 
 ## Pricing note
 
-The suggested initial event is one returned job record. A starting price of
-`$0.002` per record is intentionally below the observed remote-job competitor's
-`$0.015` per result; configure and verify the final price in Apify before any
-publication. No revenue is claimed by this repository.
+The primary billable event is one returned job record. The launch price is
+`$0.001` per record, plus `$0.00005` when a run starts. Platform usage is
+included in that price. No revenue is claimed by this repository.
 
 ## Local checks
 

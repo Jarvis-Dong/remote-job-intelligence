@@ -1,8 +1,8 @@
 # One-time publication
 
-The Actor is linked to this public Git repository and has passed a private
-Apify cloud build and a five-result test run. It is not yet monetized or listed
-in Apify Store.
+The Actor is linked to this public Git repository, has passed an Apify cloud
+build and a five-result test run, and was monetized and listed in Apify Store
+on 2026-08-14. Payout identity verification remains pending.
 
 1. Keep API tokens, identity documents, and payout details out of this
    repository and chat.
