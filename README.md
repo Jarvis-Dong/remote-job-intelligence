@@ -5,7 +5,8 @@ one run. The normalized dataset includes source attribution, direct application
 URLs, salary when published, employment type, seniority, timezone restrictions,
 and categories for recruiter alerts, job boards, market research, and AI agents.
 
-[Run the public daily software-jobs example](https://apify.com/ai-coding-radar/remote-job-intelligence/examples/daily-remote-software-jobs).
+- [Run the Actor on Apify](https://apify.com/ai-coding-radar/remote-job-intelligence)
+- [Try the public daily software-jobs example](https://apify.com/ai-coding-radar/remote-job-intelligence/examples/daily-remote-software-jobs)
 
 ## Use cases
 
