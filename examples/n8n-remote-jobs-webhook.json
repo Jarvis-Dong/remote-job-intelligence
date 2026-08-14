@@ -66,6 +66,7 @@
           ]
         },
         "sendBody": true,
+        "contentType": "json",
         "specifyBody": "json",
         "jsonBody": "={{ $json.actorInput }}",
         "options": {
