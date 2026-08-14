@@ -16,8 +16,16 @@
     "keywords": {
       "title": "Keywords",
       "type": "array",
-      "description": "All keywords must occur in the normalized listing text.",
+      "description": "Match any or all keywords in the normalized listing text.",
       "editor": "stringList"
+    },
+    "keywordMatchMode": {
+      "title": "Keyword matching",
+      "type": "string",
+      "description": "Use 'all' to require every keyword (the legacy default), or 'any' to match at least one.",
+      "enum": ["all", "any"],
+      "default": "all",
+      "editor": "select"
     },
     "locations": {
       "title": "Locations",

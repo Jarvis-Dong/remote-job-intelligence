@@ -7,25 +7,34 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .core import collect_jobs
+from .core import collect_jobs, collect_jobs_with_status
 
 
 async def run_actor(actor: object) -> None:
     actor_input = await actor.get_input() or {}
     if not isinstance(actor_input, dict):
         raise ValueError("Actor input must be an object")
-    jobs = collect_jobs(
+    jobs, report = collect_jobs_with_status(
         sources=actor_input.get("sources"),
         keywords=actor_input.get("keywords"),
         locations=actor_input.get("locations"),
         max_age_days=actor_input.get("maxAgeDays", 14),
         limit=actor_input.get("limit", 50),
         include_description=actor_input.get("includeDescription", False),
+        keyword_match_mode=actor_input.get("keywordMatchMode", "all"),
     )
+    for warning in report["warnings"]:
+        actor.log.warning(warning)
     charge = await actor.push_data(jobs)
     if charge.charged_count < len(jobs):
         actor.log.info("Charge limit reached; returned only charged records")
-    await actor.set_status_message(f"Returned {charge.charged_count} normalized remote jobs")
+    source_summary = ", ".join(
+        f"{source}:{status['status']}"
+        for source, status in report["sources"].items()
+    )
+    await actor.set_status_message(
+        f"Returned {charge.charged_count} normalized remote jobs ({report['status']}; {source_summary})"
+    )
 
 
 async def main() -> None:

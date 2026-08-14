@@ -24,6 +24,7 @@ SOURCE_META = {
     "remoteok": {"name": "Remote OK", "url": "https://remoteok.com/"},
     "himalayas": {"name": "Himalayas", "url": "https://himalayas.app/"},
 }
+KEYWORD_MATCH_MODES = {"all", "any"}
 USER_AGENT = "remote-job-intelligence/0.1 (+https://apify.com/)"
 HTML_TAG = re.compile(r"<[^>]+>")
 SPACE = re.compile(r"\s+")
@@ -79,6 +80,9 @@ def _salary(raw: dict[str, Any], source: str) -> dict[str, Any] | None:
     if source == "himalayas":
         minimum, maximum = raw.get("minSalary"), raw.get("maxSalary")
         currency, period = raw.get("currency"), raw.get("salaryPeriod")
+    elif source == "jobicy":
+        minimum, maximum = raw.get("salaryMin"), raw.get("salaryMax")
+        currency, period = raw.get("salaryCurrency"), raw.get("salaryPeriod")
     elif source == "remoteok":
         minimum, maximum = raw.get("salary_min"), raw.get("salary_max")
         currency, period = None, None
@@ -91,6 +95,48 @@ def _salary(raw: dict[str, Any], source: str) -> dict[str, Any] | None:
         "max": maximum,
         "currency": _text(currency) or None,
         "period": _text(period) or None,
+    }
+
+
+def _metadata(raw: dict[str, Any], source: str) -> dict[str, Any]:
+    """Normalize source-specific hiring metadata without dropping useful fields."""
+    if source == "arbeitnow":
+        job_types = _list(raw.get("job_types"))
+        return {
+            "jobType": job_types,
+            "employmentType": job_types[0] if job_types else None,
+            "seniority": [],
+            "timezoneRestrictions": [],
+            "categories": [],
+        }
+    if source == "jobicy":
+        job_types = _list(raw.get("jobType"))
+        return {
+            "jobType": job_types,
+            "employmentType": job_types[0] if job_types else None,
+            "seniority": _list(raw.get("jobLevel")),
+            "timezoneRestrictions": [],
+            "categories": _list(raw.get("jobIndustry")),
+        }
+    if source == "himalayas":
+        employment_type = _text(raw.get("employmentType")) or None
+        categories = _list(raw.get("categories"))
+        for category in _list(raw.get("parentCategories")):
+            if category not in categories:
+                categories.append(category)
+        return {
+            "jobType": [employment_type] if employment_type else [],
+            "employmentType": employment_type,
+            "seniority": _list(raw.get("seniority")),
+            "timezoneRestrictions": _list(raw.get("timezoneRestrictions")),
+            "categories": categories,
+        }
+    return {
+        "jobType": [],
+        "employmentType": None,
+        "seniority": [],
+        "timezoneRestrictions": [],
+        "categories": [],
     }
 
 
@@ -137,6 +183,7 @@ def normalize_job(raw: dict[str, Any], source: str, include_description: bool = 
         "locations": location_values,
         "remote": remote,
         "tags": _list(tags),
+        **_metadata(raw, source),
         "publishedAt": _iso(published),
         "url": canonical_url,
         "applyUrl": canonical_url,
@@ -190,8 +237,37 @@ def collect_jobs(
     payloads: dict[str, Any] | None = None,
     fetcher: Callable[[str], Any] = _request_json,
     now: datetime | None = None,
+    keyword_match_mode: str = "all",
 ) -> list[dict[str, Any]]:
     """Collect, filter, and deduplicate jobs; raise only when every source fails."""
+    jobs, _ = collect_jobs_with_status(
+        sources=sources,
+        keywords=keywords,
+        locations=locations,
+        max_age_days=max_age_days,
+        limit=limit,
+        include_description=include_description,
+        payloads=payloads,
+        fetcher=fetcher,
+        now=now,
+        keyword_match_mode=keyword_match_mode,
+    )
+    return jobs
+
+
+def collect_jobs_with_status(
+    sources: list[str] | None = None,
+    keywords: list[str] | None = None,
+    locations: list[str] | None = None,
+    max_age_days: int = 14,
+    limit: int = 50,
+    include_description: bool = False,
+    payloads: dict[str, Any] | None = None,
+    fetcher: Callable[[str], Any] = _request_json,
+    now: datetime | None = None,
+    keyword_match_mode: str = "all",
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Collect jobs and return explicit per-source health for the Actor run."""
     if sources is not None and (not isinstance(sources, list) or any(not isinstance(item, str) for item in sources)):
         raise ValueError("sources must be a list of strings")
     if keywords is not None and (not isinstance(keywords, list) or any(not isinstance(item, str) for item in keywords)):
@@ -210,20 +286,30 @@ def collect_jobs(
         raise ValueError("limit must be an integer between 1 and 100")
     if not isinstance(include_description, bool):
         raise ValueError("includeDescription must be a boolean")
+    if not isinstance(keyword_match_mode, str) or keyword_match_mode not in KEYWORD_MATCH_MODES:
+        raise ValueError("keywordMatchMode must be 'all' or 'any'")
     keywords = [_key(item) for item in (keywords or []) if _key(item)]
     locations = [_key(item) for item in (locations or []) if _key(item)]
     now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
     cutoff = now - timedelta(days=max_age_days)
     jobs: list[dict[str, Any]] = []
     failures = 0
+    source_status: dict[str, dict[str, Any]] = {}
     fetch_limit = min(100, max(20, limit * 3))
     for source in selected:
         try:
             payload = payloads[source] if payloads is not None and source in payloads else fetcher(_source_url(source, fetch_limit))
         except Exception:
             failures += 1
+            source_status[source] = {
+                "status": "error",
+                "recordsFetched": 0,
+                "recordsMatched": 0,
+            }
             continue
-        for raw in _payload_items(payload, source):
+        records = _payload_items(payload, source)
+        matched = 0
+        for raw in records:
             job = normalize_job(raw, source, include_description)
             if not job or not job["remote"]:
                 continue
@@ -234,24 +320,69 @@ def collect_jobs(
             if include_description:
                 haystack += " " + job.get("jobDescription", "")
             haystack = _key(haystack)
-            if keywords and not all(keyword in haystack for keyword in keywords):
+            keyword_matches = [keyword in haystack for keyword in keywords]
+            if keywords and (
+                not any(keyword_matches)
+                if keyword_match_mode == "any"
+                else not all(keyword_matches)
+            ):
                 continue
             if locations and not any(location in _key(" ".join(job["locations"])) for location in locations):
                 continue
             jobs.append(job)
+            matched += 1
+        source_status[source] = {
+            "status": "ok" if matched else "empty",
+            "recordsFetched": len(records),
+            "recordsMatched": matched,
+        }
     if not jobs and failures == len(selected):
         raise RuntimeError("all selected job sources were unavailable")
 
+    # Deduplicate before balancing so duplicate listings keep the newest record.
     seen_urls: set[str] = set()
     seen_titles: set[str] = set()
-    unique: list[dict[str, Any]] = []
+    deduplicated: list[dict[str, Any]] = []
     for job in sorted(jobs, key=lambda item: item["publishedAt"] or "", reverse=True):
         title_key = _key(f"{job['company'] or ''}-{job['jobTitle']}")
         if job["url"] in seen_urls or title_key in seen_titles:
             continue
         seen_urls.add(job["url"])
         seen_titles.add(title_key)
-        unique.append(job)
-        if len(unique) >= limit:
+        deduplicated.append(job)
+
+    grouped = {source: [] for source in selected}
+    for job in deduplicated:
+        grouped.setdefault(job["source"], []).append(job)
+    for source in grouped:
+        grouped[source].sort(key=lambda item: item["publishedAt"] or "", reverse=True)
+
+    # Round-robin keeps a selected source visible when newer feeds fill the cap.
+    unique: list[dict[str, Any]] = []
+    positions = {source: 0 for source in selected}
+    while len(unique) < limit:
+        added = False
+        for source in selected:
+            queue = grouped.get(source, [])
+            position = positions[source]
+            while position < len(queue):
+                job = queue[position]
+                position += 1
+                unique.append(job)
+                added = True
+                break
+            positions[source] = position
+            if len(unique) >= limit:
+                break
+        if not added:
             break
-    return unique
+
+    for source, status in source_status.items():
+        status["recordsReturned"] = sum(job["source"] == source for job in unique)
+    warnings = [
+        f"{source} source unavailable"
+        for source, status in source_status.items()
+        if status["status"] == "error"
+    ]
+    report_status = "partial" if warnings else ("empty" if not unique else "ok")
+    return unique, {"status": report_status, "sources": source_status, "warnings": warnings}
