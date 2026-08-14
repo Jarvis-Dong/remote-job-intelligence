@@ -20,9 +20,9 @@ and categories for recruiter alerts, job boards, market research, and AI agents.
 
 ## Automation recipes
 
-- Import the [n8n webhook digest workflow](examples/n8n-remote-jobs-webhook.json)
+- Import the [n8n webhook digest workflow](https://github.com/Jarvis-Dong/remote-job-intelligence/blob/main/examples/n8n-remote-jobs-webhook.json)
   and connect its response to Slack, email, a database, or a job board.
-- Follow the [Make scheduled-digest recipe](examples/README.md) for a
+- Follow the [Make scheduled-digest recipe](https://github.com/Jarvis-Dong/remote-job-intelligence/blob/main/examples/README.md) for a
   scheduler, HTTP request, JSON parsing, and delivery modules.
 
 Both recipes use the caller's own Apify API token; no token or private delivery
