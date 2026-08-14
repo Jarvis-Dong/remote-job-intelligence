@@ -57,6 +57,10 @@ curl -sS -X POST \
   --data '{"sources":["arbeitnow","jobicy","remoteok","himalayas"],"keywords":["software"],"keywordMatchMode":"all","locations":[],"maxAgeDays":7,"limit":20,"includeDescription":false}'
 ```
 
+The generated API client's empty `{}` input is also safe: it uses the same
+four sources, `software` keyword, seven-day window, and 20-result limit. Send
+the explicit payload above whenever you want a different query.
+
 ## Input
 
 ```json

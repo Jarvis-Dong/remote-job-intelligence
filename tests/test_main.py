@@ -35,8 +35,10 @@ class ActorDefaultsTests(unittest.IsolatedAsyncioTestCase):
 
     def test_input_schema_exposes_the_same_defaults(self):
         schema_path = Path(__file__).parents[1] / ".actor" / "input_schema.json"
-        properties = json.loads(schema_path.read_text())["properties"]
+        schema = json.loads(schema_path.read_text())
+        properties = schema["properties"]
 
+        self.assertNotIn("required", schema)
         self.assertEqual(properties["keywords"]["default"], ["software"])
         self.assertEqual(properties["maxAgeDays"]["default"], 7)
         self.assertEqual(properties["limit"]["default"], 20)

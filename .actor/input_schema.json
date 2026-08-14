@@ -59,6 +59,5 @@
       "default": false,
       "editor": "checkbox"
     }
-  },
-  "required": ["sources", "maxAgeDays", "limit", "includeDescription"]
+  }
 }
