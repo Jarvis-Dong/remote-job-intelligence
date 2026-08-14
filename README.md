@@ -44,6 +44,19 @@ provider's source credit and API terms. Job descriptions are untrusted source
 data; the default output omits them so downstream automation does not ingest
 instructions hidden in a listing.
 
+## Copy-paste REST quickstart
+
+Keep an Apify API token in your secret manager, then send a complete input
+instead of the empty placeholder shown by some generated API clients:
+
+```sh
+curl -sS -X POST \
+  'https://api.apify.com/v2/acts/ai-coding-radar~remote-job-intelligence/run-sync-get-dataset-items?clean=1' \
+  -H "Authorization: Bearer $APIFY_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{"sources":["arbeitnow","jobicy","remoteok","himalayas"],"keywords":["software"],"keywordMatchMode":"all","locations":[],"maxAgeDays":7,"limit":20,"includeDescription":false}'
+```
+
 ## Input
 
 ```json
