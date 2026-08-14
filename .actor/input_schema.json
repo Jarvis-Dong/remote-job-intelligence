@@ -17,6 +17,7 @@
       "title": "Keywords",
       "type": "array",
       "description": "Match any or all keywords in the normalized listing text.",
+      "default": ["software"],
       "editor": "stringList"
     },
     "keywordMatchMode": {
@@ -37,7 +38,7 @@
       "title": "Maximum age (days)",
       "type": "integer",
       "description": "Exclude listings older than this many days.",
-      "default": 14,
+      "default": 7,
       "minimum": 0,
       "maximum": 365,
       "editor": "number"
@@ -46,7 +47,7 @@
       "title": "Maximum results",
       "type": "integer",
       "description": "Maximum number of normalized records to return.",
-      "default": 50,
+      "default": 20,
       "minimum": 1,
       "maximum": 100,
       "editor": "number"

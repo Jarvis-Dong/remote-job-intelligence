@@ -16,10 +16,10 @@ async def run_actor(actor: object) -> None:
         raise ValueError("Actor input must be an object")
     jobs, report = collect_jobs_with_status(
         sources=actor_input.get("sources"),
-        keywords=actor_input.get("keywords"),
+        keywords=actor_input.get("keywords", ["software"]),
         locations=actor_input.get("locations"),
-        max_age_days=actor_input.get("maxAgeDays", 14),
-        limit=actor_input.get("limit", 50),
+        max_age_days=actor_input.get("maxAgeDays", 7),
+        limit=actor_input.get("limit", 20),
         include_description=actor_input.get("includeDescription", False),
         keyword_match_mode=actor_input.get("keywordMatchMode", "all"),
     )
