@@ -1,16 +1,20 @@
 # Remote Jobs Aggregator API
 
-Aggregate and deduplicate current remote-job listings from four public feeds in
-one run. The normalized dataset is ready for recruiter alerts, job boards,
-market research, and AI agents, while retaining the original source and direct
-application URL for every record.
+Aggregate and deduplicate fresh remote-job listings from four public feeds in
+one run. The normalized dataset includes source attribution, direct application
+URLs, salary when published, employment type, seniority, timezone restrictions,
+and categories for recruiter alerts, job boards, market research, and AI agents.
 
 [Run the public daily software-jobs example](https://apify.com/ai-coding-radar/remote-job-intelligence/examples/daily-remote-software-jobs).
 
 ## Use cases
 
+- **Remote jobs aggregator API:** power a niche job board, recruiter pipeline,
+  or hiring-data product with one JSON/CSV/Excel feed instead of four scrapers.
 - Build a daily remote-jobs digest with n8n, Make, Zapier, or the Actor API.
 - Feed a job board or recruiter workflow with deduplicated listings.
+- **Remote salary and hiring research:** compare the salary, seniority, category,
+  and location signals that public sources expose.
 - Export the Apify dataset as JSON, CSV, or Excel for research and reporting.
 - Give an AI agent structured records without logging in to job sites.
 
@@ -44,6 +48,7 @@ instructions hidden in a listing.
 {
   "sources": ["arbeitnow", "jobicy", "remoteok", "himalayas"],
   "keywords": ["software"],
+  "keywordMatchMode": "all",
   "locations": [],
   "maxAgeDays": 7,
   "limit": 20,
@@ -51,11 +56,21 @@ instructions hidden in a listing.
 }
 ```
 
-Every keyword must match the job title, company, tags, or (when requested) job
-description, so use one broad term for a daily alert.
+`keywordMatchMode` defaults to `all`, preserving the strict legacy behavior. Set
+it to `any` when a search should match at least one keyword. Every keyword is
+matched against the job title, company, tags, locations, or (when requested)
+the job description, so use one broad term for a strict daily alert or `any`
+for a wider recruiter search.
 `locations` match the normalized location and source location restrictions.
 An empty filter means all matching remote listings. Results are deduplicated by
-canonical application URL, then by a normalized company/title pair.
+canonical application URL, then by a normalized company/title pair. When more
+than one source is selected, the newest unique records are merged round-robin
+by source so a high-volume feed does not hide the other selected feeds. The run
+status reports a source warning when a public feed is unavailable.
+
+Each row can include `salary`, `jobType`, `employmentType`, `seniority`,
+`timezoneRestrictions`, and `categories`; fields remain empty when a source did
+not publish them.
 
 ## Pricing note
 
