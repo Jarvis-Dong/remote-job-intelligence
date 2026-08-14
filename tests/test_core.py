@@ -98,6 +98,19 @@ class NormalizeTests(unittest.TestCase):
         self.assertEqual(result["timezoneRestrictions"], ["UTC-5"])
         self.assertEqual(result["categories"], ["Data Engineering", "Engineering"])
 
+    def test_uses_himalayas_slug_when_company_name_is_placeholder(self):
+        result = normalize_job(
+            {
+                "guid": "https://himalayas.app/companies/bright-vision-technologies/jobs/data-engineer",
+                "title": "Data Engineer",
+                "companyName": "name",
+                "companySlug": "bright-vision-technologies",
+                "pubDate": "2026-08-13T00:00:00Z",
+            },
+            "himalayas",
+        )
+        self.assertEqual(result["company"], "Bright Vision Technologies")
+
     def test_rejects_record_without_http_url(self):
         self.assertIsNone(normalize_job({"title": "No link"}, "jobicy"))
 

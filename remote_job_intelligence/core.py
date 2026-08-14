@@ -76,6 +76,14 @@ def _key(value: str) -> str:
     return NON_WORD.sub("-", value.lower()).strip("-")
 
 
+def _himalayas_company(raw: dict[str, Any]) -> str | None:
+    company = _text(raw.get("companyName"))
+    if company and company.lower() not in {"name", "company", "company name"}:
+        return company
+    slug = _text(raw.get("companySlug"))
+    return SPACE.sub(" ", slug.replace("-", " ").replace("_", " ")).strip().title() or None
+
+
 def _salary(raw: dict[str, Any], source: str) -> dict[str, Any] | None:
     if source == "himalayas":
         minimum, maximum = raw.get("minSalary"), raw.get("maxSalary")
@@ -161,7 +169,7 @@ def normalize_job(raw: dict[str, Any], source: str, include_description: bool = 
         description = raw.get("description")
         source_id = raw.get("id") or raw.get("slug") or url
     elif source == "himalayas":
-        title, company, location = raw.get("title"), raw.get("companyName"), raw.get("locationRestrictions")
+        title, company, location = raw.get("title"), _himalayas_company(raw), raw.get("locationRestrictions")
         tags, published, url, apply_url = raw.get("categories"), raw.get("pubDate"), raw.get("guid"), raw.get("applicationLink") or raw.get("guid")
         remote = True
         description = raw.get("description") or raw.get("excerpt")
