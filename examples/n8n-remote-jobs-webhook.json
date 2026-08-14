@@ -1,0 +1,171 @@
+{
+  "name": "Remote Jobs Aggregator - n8n webhook digest",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Remote Jobs Aggregator\n\nImport this workflow, set `APIFY_API_TOKEN` in the n8n runtime (or replace the Authorization header with an n8n Header Auth credential), then POST a JSON request to the webhook.\n\nThe workflow calls the public Actor API, formats a small digest, and returns the normalized jobs. See `examples/README.md` for setup and a sample request.\n\nEvery run uses your Apify account and may incur the Actor's published per-result charge.",
+        "height": 300,
+        "width": 420,
+        "color": 5
+      },
+      "id": "0b1b4b8f-50ed-45f1-a51c-cf5aa5b4f07d",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "remote-jobs",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "d9e8fa2d-cdb8-4a8e-8c4c-bd696b6bf8d2",
+      "name": "Receive remote jobs request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -560,
+        40
+      ],
+      "webhookId": "f6b84833-1dc5-45f7-9d83-1da1d12d01f3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body && typeof $json.body === 'object' ? $json.body : $json;\nconst defaultSources = ['arbeitnow', 'jobicy', 'remoteok', 'himalayas'];\nconst asStrings = (value, fallback) => Array.isArray(value) ? value.filter(item => typeof item === 'string' && item.trim()) : fallback;\nconst boundedInteger = (value, fallback, min, max) => Number.isInteger(value) ? Math.max(min, Math.min(max, value)) : fallback;\nconst actorInput = {\n  sources: asStrings(body.sources, defaultSources),\n  keywords: asStrings(body.keywords, ['software']),\n  locations: asStrings(body.locations, []),\n  maxAgeDays: boundedInteger(body.maxAgeDays, 7, 0, 365),\n  limit: boundedInteger(body.limit, 20, 1, 100),\n  includeDescription: body.includeDescription === true\n};\nreturn [{ json: { actorInput } }];"
+      },
+      "id": "e8d14e31-f6ea-4fe9-bb31-6afcfd018bb0",
+      "name": "Build Actor input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/ai-coding-radar~remote-job-intelligence/run-sync-get-dataset-items?clean=1",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.APIFY_API_TOKEN }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.actorInput }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "cc94cfbd-9b52-4baf-a6e0-8d76e2ced4c4",
+      "name": "Run Remote Jobs Actor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const entries = $input.all();\nconst first = entries.length === 1 ? entries[0].json : null;\nlet jobs;\nif (Array.isArray(first)) {\n  jobs = first;\n} else if (first && Array.isArray(first.body)) {\n  jobs = first.body;\n} else if (first && Array.isArray(first.data)) {\n  jobs = first.data;\n} else if (first && Array.isArray(first.items)) {\n  jobs = first.items;\n} else {\n  jobs = entries.map(entry => entry.json);\n}\njobs = jobs.filter(job => job && typeof job === 'object' && job.jobTitle);\nconst date = new Date().toISOString().slice(0, 10);\nconst lines = jobs.map((job, index) => {\n  const location = Array.isArray(job.locations) && job.locations.length ? ` | ${job.locations.join(', ')}` : '';\n  const company = job.company || 'Unknown company';\n  return `${index + 1}. ${job.jobTitle} - ${company}${location}\\n   ${job.url || job.applyUrl || ''}`;\n});\nreturn [{\n  json: {\n    date,\n    count: jobs.length,\n    digestText: [`Remote jobs for ${date}`, `Found ${jobs.length} matching listings`, ...lines].join('\\n'),\n    jobs\n  }\n}];"
+      },
+      "id": "6f1a22ee-143f-4652-899c-2fd64ea71d01",
+      "name": "Format digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "b05e9c12-e1bc-46ea-b2ec-a6ba990f1a9d",
+      "name": "Return digest",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        40
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receive remote jobs request": {
+      "main": [
+        [
+          {
+            "node": "Build Actor input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Actor input": {
+      "main": [
+        [
+          {
+            "node": "Run Remote Jobs Actor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Remote Jobs Actor": {
+      "main": [
+        [
+          {
+            "node": "Format digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format digest": {
+      "main": [
+        [
+          {
+            "node": "Return digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Shanghai",
+    "saveManualExecutions": true
+  },
+  "versionId": "8bfdf9ff-36a1-4f22-93e3-0dbb34efb8a8",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

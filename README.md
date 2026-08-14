@@ -14,6 +14,16 @@ application URL for every record.
 - Export the Apify dataset as JSON, CSV, or Excel for research and reporting.
 - Give an AI agent structured records without logging in to job sites.
 
+## Automation recipes
+
+- Import the [n8n webhook digest workflow](examples/n8n-remote-jobs-webhook.json)
+  and connect its response to Slack, email, a database, or a job board.
+- Follow the [Make scheduled-digest recipe](examples/README.md) for a
+  scheduler, HTTP request, JSON parsing, and delivery modules.
+
+Both recipes use the caller's own Apify API token; no token or private delivery
+URL is stored in this repository.
+
 ## Sources
 
 - Arbeitnow public job-board API (remote listings only)
