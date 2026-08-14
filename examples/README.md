@@ -15,17 +15,22 @@ workflow.
 
 ### One-time setup
 
-1. Set `APIFY_API_TOKEN` in the n8n runtime and restart n8n. If your n8n
+1. On **Receive remote jobs request**, create/select an n8n **Header Auth**
+   credential. The imported workflow requires this credential so an exposed
+   webhook cannot spend your Apify balance without authorization. Send the
+   credential's header on each request.
+2. Set `APIFY_API_TOKEN` in the n8n runtime and restart n8n. If your n8n
    installation blocks environment variables in expressions, configure the
    supported Header Auth credential instead and replace the `Authorization`
    header on **Run Remote Jobs Actor**. Never commit the token to the workflow
    export.
-2. Activate the workflow and copy the **Production URL** shown by the
+3. Activate the workflow and copy the **Production URL** shown by the
    **Receive remote jobs request** node.
-3. POST a request such as:
+4. POST a request such as:
 
    ```sh
    curl -X POST 'https://YOUR_N8N_HOST/webhook/remote-jobs' \
+     -H 'X-Webhook-Key: YOUR_PRIVATE_VALUE' \
      -H 'content-type: application/json' \
      -d '{"keywords":["software"],"maxAgeDays":7,"limit":20}'
    ```

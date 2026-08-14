@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "# Remote Jobs Aggregator\n\nImport this workflow, set `APIFY_API_TOKEN` in the n8n runtime (or replace the Authorization header with an n8n Header Auth credential), then POST a JSON request to the webhook.\n\nThe workflow calls the public Actor API, formats a small digest, and returns the normalized jobs. See `examples/README.md` for setup and a sample request.\n\nEvery run uses your Apify account and may incur the Actor's published per-result charge.",
+        "content": "# Remote Jobs Aggregator\n\nImport this workflow, attach a Header Auth credential to the webhook, and set `APIFY_API_TOKEN` in the n8n runtime (or replace the Authorization header with an n8n Header Auth credential). Then POST a JSON request to the webhook.\n\nThe workflow calls the public Actor API, formats a small digest, and returns the normalized jobs. See `examples/README.md` for setup and a sample request.\n\nEvery run uses your Apify account and may incur the Actor's published per-result charge.",
         "height": 300,
         "width": 420,
         "color": 5
@@ -21,6 +21,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "remote-jobs",
+        "authentication": "headerAuth",
         "responseMode": "responseNode",
         "options": {}
       },
