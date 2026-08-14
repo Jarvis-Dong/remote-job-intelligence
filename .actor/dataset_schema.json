@@ -2,20 +2,24 @@
   "$schema": "https://apify.com/schemas/v1/dataset.ide.json",
   "actorSpecification": 1,
   "fields": {
-    "id": {"type": "string"},
-    "source": {"type": "string"},
-    "sourceName": {"type": "string"},
-    "sourceUrl": {"type": "string", "format": "uri"},
-    "jobTitle": {"type": "string"},
-    "company": {"type": "string", "nullable": true},
-    "locations": {"type": "array", "items": {"type": "string"}},
-    "remote": {"type": "boolean"},
-    "tags": {"type": "array", "items": {"type": "string"}},
-    "publishedAt": {"type": "string", "format": "date-time", "nullable": true},
-    "url": {"type": "string", "format": "uri"},
-    "applyUrl": {"type": "string", "format": "uri"},
-    "salary": {"type": "object", "nullable": true},
-    "jobDescription": {"type": "string", "nullable": true}
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {"type": "string"},
+      "source": {"type": "string"},
+      "sourceName": {"type": "string"},
+      "sourceUrl": {"type": "string", "format": "uri"},
+      "jobTitle": {"type": "string"},
+      "company": {"type": ["string", "null"]},
+      "locations": {"type": "array", "items": {"type": "string"}},
+      "remote": {"type": "boolean"},
+      "tags": {"type": "array", "items": {"type": "string"}},
+      "publishedAt": {"type": ["string", "null"], "format": "date-time"},
+      "url": {"type": "string", "format": "uri"},
+      "applyUrl": {"type": "string", "format": "uri"},
+      "salary": {"type": ["object", "null"]},
+      "jobDescription": {"type": ["string", "null"]}
+    }
   },
   "views": {
     "overview": {
