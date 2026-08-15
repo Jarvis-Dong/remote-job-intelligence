@@ -20,6 +20,14 @@ class ReadmeTests(unittest.TestCase):
         self.assertIn('"limit":20', readme)
         self.assertIn('"includeDescription":false', readme)
 
+    def test_readme_shows_the_fixture_backed_output_shape(self):
+        readme = (Path(__file__).parents[1] / "README.md").read_text()
+
+        self.assertIn("Fixture-backed sample output", readme)
+        self.assertIn('"id": "arbeitnow:sample-python"', readme)
+        self.assertIn('"jobTitle": "Python Engineer"', readme)
+        self.assertIn('"applyUrl": "https://example.com/jobs/python-engineer"', readme)
+
 
 if __name__ == "__main__":
     unittest.main()

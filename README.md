@@ -92,6 +92,27 @@ Each row can include `salary`, `jobType`, `employmentType`, `seniority`,
 `timezoneRestrictions`, and `categories`; fields remain empty when a source did
 not publish them.
 
+## Fixture-backed sample output
+
+The offline fixture in `tests/fixtures/sample.json` produces this normalized
+record (abridged):
+
+```json
+{
+  "id": "arbeitnow:sample-python",
+  "source": "arbeitnow",
+  "sourceName": "Arbeitnow",
+  "jobTitle": "Python Engineer",
+  "company": "Example Co",
+  "locations": ["Worldwide"],
+  "remote": true,
+  "tags": ["Python", "Backend"],
+  "publishedAt": "2026-08-13T00:00:00Z",
+  "applyUrl": "https://example.com/jobs/python-engineer",
+  "salary": null
+}
+```
+
 ## Pricing note
 
 The primary billable event is one returned job record. The launch price is
