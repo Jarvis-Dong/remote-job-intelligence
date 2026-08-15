@@ -8,6 +8,7 @@ and categories for recruiter alerts, job boards, market research, and AI agents.
 - [Run the Actor on Apify](https://apify.com/ai-coding-radar/remote-job-intelligence)
 - [Try the public daily software-jobs example](https://apify.com/ai-coding-radar/remote-job-intelligence/examples/daily-remote-software-jobs)
 - [Try the public daily AI and machine-learning jobs example](https://apify.com/ai-coding-radar/remote-job-intelligence/examples/daily-remote-ai-and-machine-learning-jobs)
+- [Browse the complete automation API catalog](https://ai-coding-radar.github.io/#toolbox-title)
 
 ## Use cases
 
